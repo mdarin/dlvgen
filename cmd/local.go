@@ -1,10 +1,10 @@
 /*
 Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
+	"dlvgen/internal/config"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -20,8 +20,25 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("local called")
+
+		options := config.ConfigOptions{
+			Args:         opts.Args,
+			EnvVars:      opts.EnvVars,
+			ShowLog:      opts.ShowLog,
+			StopOnEntry:  opts.StopOnEntry,
+			BuildFlags:   opts.BuildFlags,
+			WorkingDir:   opts.WorkingDir,
+			ConsoleType:  opts.ConsoleType,
+			OutputFormat: opts.Format,
+			OutputFile:   opts.OutputFile,
+		}
+
+		launchCfg := config.GenerateConfig(options)
+		config.OutputConfig(launchCfg, options)
+
+		return nil
 	},
 }
 

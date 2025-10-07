@@ -1,4 +1,4 @@
-package internal
+package config
 
 type DebugConfig struct {
 	Version string         `json:"version"`

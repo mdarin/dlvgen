@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/jaytaylor/go-find"
+	"dlvgen/pkg/go-find"
 )
 
 // FindMainProgram ищет точку входа main.go в проекте.
