@@ -13,22 +13,26 @@ import (
 func GenerateConfig(opts ConfigOptions) DebugConfig {
 	slog.Debug("Generating configuration", "type", opts.ConfigType)
 
-	programPath := finder.FindMainProgram([]string{opts.ProgramPath})
-
 	configs := []LaunchConfig{}
 
 	switch opts.ConfigType {
 	case "local":
+		programPath := finder.FindMainProgram([]string{opts.ProgramPath})
 		configs = append(configs, createLocalConfig(programPath, opts))
 
 	case "remote":
-		configs = append(configs, createRemoteConfig(programPath, opts))
+		configs = append(configs, createRemoteConfig("", opts))
 
 	case "test":
 		configs = append(configs, createTestConfig(opts))
 
 	default:
 		slog.Warn("Unknown config type, using local", "type", opts.ConfigType)
+		// set default path for searching
+		if len(opts.ProgramPath) == 0 {
+			opts.ProgramPath = "."
+		}
+		programPath := finder.FindMainProgram([]string{opts.ProgramPath})
 		configs = append(configs, createLocalConfig(programPath, opts))
 	}
 
@@ -114,63 +118,6 @@ func createTestConfig(opts ConfigOptions) LaunchConfig {
 	return config
 }
 
-// func findMainProgram() string {
-// 	slog.Debug("Searching for main.go files")
-
-// 	searchPaths := []string{
-// 		".",
-// 		"cmd",
-// 		"app",
-// 		"src",
-// 		"main",
-// 	}
-
-// 	var candidates []string
-
-// 	for _, path := range searchPaths {
-// 		err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
-// 			if err != nil {
-// 				return nil
-// 			}
-
-// 			if !info.IsDir() && strings.HasSuffix(filePath, ".go") {
-// 				content, err := os.ReadFile(filePath)
-// 				if err == nil {
-// 					if strings.Contains(string(content), "package main") &&
-// 						strings.Contains(string(content), "func main()") {
-// 						candidates = append(candidates, filePath)
-// 						slog.Debug("Found main program candidate", "file", filePath)
-// 					}
-// 				}
-// 			}
-// 			return nil
-// 		})
-
-// 		if err != nil {
-// 			slog.Debug("Error walking path", "path", path, "error", err)
-// 		}
-// 	}
-
-// 	if len(candidates) > 0 {
-// 		// Prioritize by depth and common patterns
-// 		bestCandidate := candidates[0]
-// 		for _, candidate := range candidates {
-// 			if strings.Contains(candidate, "cmd/") || strings.Contains(candidate, "main/") {
-// 				bestCandidate = candidate
-// 				break
-// 			}
-// 			if strings.Count(candidate, string(filepath.Separator)) < strings.Count(bestCandidate, string(filepath.Separator)) {
-// 				bestCandidate = candidate
-// 			}
-// 		}
-// 		slog.Info("Selected main program", "file", bestCandidate)
-// 		return bestCandidate
-// 	}
-
-// 	slog.Warn("No main.go files found, using default")
-// 	return "./main.go"
-// }
-
 func parseArgs(argsStr string) []string {
 	if argsStr == "" {
 		return nil
@@ -221,7 +168,8 @@ func OutputConfig(config DebugConfig, opts ConfigOptions) {
 	}
 }
 
-func showExamples() {
+// TODO: попправить
+func ShowExamples() {
 	fmt.Printf("%s\n\n", Blue("DlvGen Usage Examples"))
 
 	fmt.Printf("%s\n", Yellow("1. Basic local debug configuration:"))
@@ -246,7 +194,7 @@ func showExamples() {
 	fmt.Printf("  dlvgen -v --build-flags=\"-tags=development\" --stop-on-entry\n\n")
 }
 
-func listTemplates() {
+func ListTemplates() {
 	fmt.Printf("%s\n\n", Blue("Available Configuration Templates"))
 
 	templates := map[string]string{

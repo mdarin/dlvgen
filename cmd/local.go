@@ -21,9 +21,16 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("local called")
+		fmt.Println("local called", args)
+
+		// set default path for searching
+		path := "."
+		if len(opts.ProgramPath) != 0 {
+			path = opts.ProgramPath
+		}
 
 		options := config.ConfigOptions{
+			ConfigType:   cmd.Use,
 			Args:         opts.Args,
 			EnvVars:      opts.EnvVars,
 			ShowLog:      opts.ShowLog,
@@ -33,6 +40,7 @@ to quickly create a Cobra application.`,
 			ConsoleType:  opts.ConsoleType,
 			OutputFormat: opts.Format,
 			OutputFile:   opts.OutputFile,
+			ProgramPath:  path,
 		}
 
 		launchCfg := config.GenerateConfig(options)

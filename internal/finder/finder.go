@@ -2,6 +2,7 @@ package finder
 
 // Установка: go get github.com/jaytaylor/go-find
 import (
+	"cmp"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -31,18 +32,26 @@ func FindMainProgram(paths []string) string {
 	slog.Debug("Found candidates", "files", hits)
 
 	// Find the Least Nested main.go File
-	// slices.SortFunc(hits, comparePathDepths)
+	bestCandidate := SelectBestCandidate(hits)
 
+	slog.Info("Selected main program by shortest path", "file", bestCandidate)
+
+	return bestCandidate
+}
+
+// TODo: add tests
+// Select main program by shortest path
+func SelectBestCandidate(hits []string) string {
 	// 3. Логика приоритизации
 
 	// 3a. Сначала ищем приоритетный путь в /cmd/
-	cmdSeparator := "cmd" + string(filepath.Separator)
-	for _, candidate := range hits {
-		if strings.Contains(candidate, cmdSeparator) {
-			slog.Info("Selected main program from high-priority path", "file", candidate)
-			return candidate
-		}
-	}
+	// cmdSeparator := "cmd" + string(filepath.Separator)
+	// for _, candidate := range hits {
+	// 	if strings.Contains(candidate, cmdSeparator) {
+	// 		slog.Info("Selected main program from high-priority path", "file", candidate)
+	// 		return candidate
+	// 	}
+	// }
 
 	// 3b. Если в /cmd/ ничего нет, сортируем всех по глубине, как вы предложили.
 	// Используем slices.SortFunc для чистоты кода.
@@ -50,20 +59,18 @@ func FindMainProgram(paths []string) string {
 		depthA := strings.Count(a, string(filepath.Separator))
 		depthB := strings.Count(b, string(filepath.Separator))
 		// Сравниваем для сортировки по возрастанию глубины
-		if depthA < depthB {
-			return -1
-		}
-		if depthA > depthB {
-			return 1
-		}
-		return 0
+		// if depthA < depthB {
+		// 	return -1
+		// }
+		// if depthA > depthB {
+		// 	return 1
+		// }
+		// return 0
+		return cmp.Compare(depthA, depthB)
 	})
 
 	// После сортировки лучший кандидат (самый неглубокий) будет первым.
-	bestCandidate := hits[0]
-	slog.Info("Selected main program by shortest path", "file", bestCandidate)
-
-	return bestCandidate
+	return hits[0]
 }
 
 // func findMainProgram() string {
